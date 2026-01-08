@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прием Металлолома - Черный и Цветной Металл</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .contact-header {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contact-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .contact-item a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .contact-item a:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?w=1200');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .hero h2 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero p {
+            font-size: 22px;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #ff6b35;
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.4);
+            cursor: pointer;
+            border: none;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255,107,53,0.6);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #1e3c72;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 50px;
+        }
+
+        .metal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .metal-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .metal-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .metal-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f5f5f5;
+        }
+
+        .metal-info {
+            padding: 25px;
+        }
+
+        .metal-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .metal-price {
+            font-size: 28px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .metal-unit {
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+
+        .metal-category {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .category-black {
+            background: #34495e;
+            color: white;
+        }
+
+        .category-colored {
+            background: #f39c12;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .close {
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            line-height: 1;
+        }
+
+        .close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,107,53,0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .contact-section {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 60px 20px;
+            margin-top: 60px;
+        }
+
+        .contact-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .contact-title {
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+
+        .contact-numbers {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .contact-number {
+            background: rgba(255,255,255,0.1);
+            padding: 30px 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .contact-number:hover {
+            transform: scale(1.05);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .contact-number svg {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 15px;
+        }
+
+        .contact-number a {
+            color: white;
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .contact-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .contact-numbers {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .modal-content {
+                margin: 20px 10px;
+                width: calc(100% - 20px);
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .metal-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metal-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo h1 {
+                font-size: 22px;
+            }
+            
+            .contact-item a {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏭 Прием Металлолома</h1>
+            </div>
+            <div class="contact-header">
+                <div class="contact-item">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.2 0-2.4-.2-3.5-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></svg>
+                    <a href="tel:+998901234567">+998 (90) 123-45-67</a>
+                </div>
+                <div class="contact-item">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.2 0-2.4-.2-3.5-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></svg>
+                    <a href="tel:+998911234567">+998 (91) 123-45-67</a>
+                </div>
+                <div class="contact-item">
+                    <a href="https://wa.me/79855557141" target="_blank" class="whatsapp-btn">
+                        <svg fill="currentColor" width="20" height="20" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 5px;">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                        WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h2>Покупаем Металлолом по Высоким Ценам</h2>
+        <p>Принимаем черный и цветной металл по лучшим ценам</p>
+        <button class="cta-button" onclick="openModal()">Оставить Заявку</button>
+    </section>
+
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Оставить Заявку</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="successMessage" class="success-message">
+                    ✅ Ваша заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.
+                </div>
+                <div id="errorMessage" class="error-message">
+                    ❌ Произошла ошибка. Пожалуйста, попробуйте еще раз.
+                </div>
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label for="name">Ваше имя *</label>
+                        <input type="text" id="name" required placeholder="Введите ваше имя">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Номер телефона *</label>
+                        <input type="tel" id="phone" required placeholder="+998 (90) 123-45-67">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quantity">Примерное количество (кг) *</label>
+                        <input type="number" id="quantity" required placeholder="Например: 100" min="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address">Адрес *</label>
+                        <input type="text" id="address" required placeholder="Ваш адрес">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="comment">Комментарий</label>
+                        <textarea id="comment" placeholder="Укажите тип металла и дополнительную информацию..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        Отправить Заявку
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="section-title">Цены на Металлолом</h2>
+        <p class="section-subtitle">Актуальные цены на прием черного и цветного металла</p>
+        
+        <div class="metal-grid">
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1602524206684-bbf5d27c7959?w=400" alt="Железный лом" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">🔩 Железный лом (А3)</div>
+                    <div class="metal-price">2 500 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-black">Черный металл</span>
+                </div>
+            </div>
+
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1635241161466-541f065683ba?w=400" alt="Чугун" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">⚙️ Чугун</div>
+                    <div class="metal-price">2 200 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-black">Черный металл</span>
+                </div>
+            </div>
+
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1594843310916-4f63e55ce992?w=400" alt="Стальной лом" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">🔧 Стальной лом</div>
+                    <div class="metal-price">2 800 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-black">Черный металл</span>
+                </div>
+            </div>
+
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1565008576549-57569a49371d?w=400" alt="Арматура" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">🏗️ Арматура</div>
+                    <div class="metal-price">2 400 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-black">Черный металл</span>
+                </div>
+            </div>
+
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=400" alt="Медь" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">🟡 Медь</div>
+                    <div class="metal-price">95 000 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-colored">Цветной металл</span>
+                </div>
+            </div>
+
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1598134493113-ded4f3777814?w=400" alt="Латунь" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">🟠 Латунь</div>
+                    <div class="metal-price">55 000 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-colored">Цветной металл</span>
+                </div>
+            </div>
+
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?w=400" alt="Алюминий" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">⚪ Алюминий</div>
+                    <div class="metal-price">28 000 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-colored">Цветной металл</span>
+                </div>
+            </div>
+
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400" alt="Свинец" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">🔵 Свинец</div>
+                    <div class="metal-price">18 000 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-colored">Цветной металл</span>
+                </div>
+            </div>
+
+            <div class="metal-card">
+                <img src="https://images.unsplash.com/photo-1587987119725-4bd8c80c8c10?w=400" alt="Нержавейка" class="metal-image">
+                <div class="metal-info">
+                    <div class="metal-name">⚫ Нержавейка</div>
+                    <div class="metal-price">45 000 <span class="metal-unit">сум / кг</span></div>
+                    <span class="metal-category category-colored">Цветной металл</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="contact-section">
+        <div class="contact-content">
+            <h2 class="contact-title">Свяжитесь с Нами</h2>
+            <p style="font-size: 18px; margin-bottom: 20px;">
+                Покупаем металлолом быстро и по выгодным ценам. <br>
+                Доставка металлолома имеется!
+            </p>
+            
+            <div class="contact-numbers">
+                <div class="contact-number">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.2 0-2.4-.2-3.5-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></svg>
+                    <a href="tel:+998901234567">+998 (90) 123-45-67</a>
+                    <div class="contact-label">Основной номер</div>
+                </div>
+                <div class="contact-number">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.2 0-2.4-.2-3.5-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></svg>
+                    <a href="tel:+998911234567">+998 (91) 123-45-67</a>
+                    <div class="contact-label">Дополнительный номер</div>
+                </div>
+                <div class="contact-number">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    <a href="https://wa.me/79855557141" target="_blank">WhatsApp</a>
+                    <div class="contact-label">Написать в WhatsApp</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p><strong>Время работы:</strong> Понедельник - Суббота, 8:00 - 18:00</p>
+        <div style="margin-top: 20px; display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg fill="white" width="18" height="18" viewBox="0 0 24 24"><path d="M20 15.5c-1.2 0-2.4-.2-3.5-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></svg>
+                <a href="tel:+998901234567">+998 (90) 123-45-67</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg fill="white" width="18" height="18" viewBox="0 0 24 24"><path d="M20 15.5c-1.2 0-2.4-.2-3.5-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></svg>
+                <a href="tel:+998911234567">+998 (91) 123-45-67</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg fill="white" width="18" height="18" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                <a href="https://wa.me/79855557141" target="_blank">WhatsApp</a>
+            </div>
+        </div>
+        <p style="margin-top: 20px; opacity: 0.8;">© 2025 Прием Металлолома. Все права защищены.</p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-CQt-t7nNYgzhRzgYTD0J5Tba_TGVxFo",
+            authDomain: "temirbaza-f2c59.firebaseapp.com",
+            databaseURL: "https://temirbaza-f2c59-default-rtdb.firebaseio.com",
+            projectId: "temirbaza-f2c59",
+            storageBucket: "temirbaza-f2c59.firebasestorage.app",
+            messagingSenderId: "435825287556",
+            appId: "1:435825287556:web:29effe981f938c1ba5fdd1",
+            measurementId: "G-LPCWY0FMKT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        document.getElementById('orderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successMsg = document.getElementById('successMessage');
+            const errorMsg = document.getElementById('errorMessage');
+            
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка...';
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                quantity: document.getElementById('quantity').value,
+                address: document.getElementById('address').value,
+                comment: document.getElementById('comment').value,
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleString('ru-RU', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            };
+            
+            try {
+                const ordersRef = ref(database, 'orders');
+                const newOrderRef = push(ordersRef);
+                await set(newOrderRef, formData);
+                
+                successMsg.style.display = 'block';
+                document.getElementById('orderForm').reset();
+                
+                setTimeout(() => {
+                    closeModal();
+                    successMsg.style.display = 'none';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                errorMsg.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Отправить Заявку';
+            }
+        });
+    </script>
+
+    <script>
+        function openModal() {
+            document.getElementById('orderModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+    </script>
+</body>
+</html>
