@@ -1,3 +1,4 @@
+v 1.0.4 => main: readme new
 v 1.0.3 => main: admin panel uchun ham hostingni shu yerni o'zida yasadim. 1ta FB moekspometall project 2ta hosting.
 v 1.0.2 => main: firebase hostingga qoyilgan app zayavkasi moekspometall RTDB ga tushadimi test
 v 1.0.1 => main: firebase hosting, added hosting folder, index.html divided into 3 files: index.html, script.js, style.css.
