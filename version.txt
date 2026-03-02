@@ -1,3 +1,4 @@
+v 1.0.5 => main: admin va mani uchun firebase config js faylida manula ammo bir xil
 v 1.0.4 => main: readme new
 v 1.0.3 => main: admin panel uchun ham hostingni shu yerni o'zida yasadim. 1ta FB moekspometall project 2ta hosting.
 v 1.0.2 => main: firebase hostingga qoyilgan app zayavkasi moekspometall RTDB ga tushadimi test
