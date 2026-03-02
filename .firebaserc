@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "mosekspometall"
-  }
+  },
+  "targets": {
+    "mosekspometall": {
+      "hosting": {
+        "main": [
+          "mosekspometall"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

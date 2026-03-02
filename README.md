@@ -1,2 +1,2 @@
 # TemirBaza
-Temir Baza
+# Firebase hostingda qo'yilgan

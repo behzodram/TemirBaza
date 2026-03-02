@@ -2,14 +2,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebas
 import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyD-CQt-t7nNYgzhRzgYTD0J5Tba_TGVxFo",
-    authDomain: "temirbaza-f2c59.firebaseapp.com",
-    databaseURL: "https://temirbaza-f2c59-default-rtdb.firebaseio.com",
-    projectId: "temirbaza-f2c59",
-    storageBucket: "temirbaza-f2c59.firebasestorage.app",
-    messagingSenderId: "435825287556",
-    appId: "1:435825287556:web:29effe981f938c1ba5fdd1",
-    measurementId: "G-LPCWY0FMKT"
+    apiKey: "AIzaSyCdrz8JMttKpswmvjmlIDivROJHS_uIMwU",
+    authDomain: "mosekspometall.firebaseapp.com",
+    databaseURL: "https://mosekspometall-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "mosekspometall",
+    storageBucket: "mosekspometall.firebasestorage.app",
+    messagingSenderId: "974569748549",
+    appId: "1:974569748549:web:ffebaa3b638e4572804b2c",
+    measurementId: "G-7Y5PQQ5Y4Q"
 };
 
 const app = initializeApp(firebaseConfig);
