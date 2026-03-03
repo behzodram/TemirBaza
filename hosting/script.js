@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -41,6 +41,28 @@ function createMetalCard(metal, price) {
     `;
 }
 
+// Load site settings (hero image and favicon)
+function loadSiteSettings() {
+    const settingsRef = ref(database, 'settings');
+    onValue(settingsRef, (snapshot) => {
+        const settings = snapshot.val() || {};
+        
+        // Update hero background
+        const heroSection = document.getElementById('hero');
+        if (settings.heroImageUrl) {
+            heroSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${settings.heroImageUrl}')`;
+            heroSection.style.backgroundSize = 'cover';
+            heroSection.style.backgroundPosition = 'center';
+        }
+        
+        // Update favicon
+        if (settings.faviconUrl) {
+            const favicon = document.getElementById('favicon');
+            favicon.href = settings.faviconUrl;
+        }
+    });
+}
+
 // Load metals from Firebase
 const metalGrid = document.getElementById('metalGrid');
 
@@ -60,14 +82,15 @@ onValue(metalsRef, (snapshot) => {
         metalGrid.innerHTML += createMetalCard(metal, null);
         
         // Load image from Storage if imagePath exists
-        if (metal.imagePath) {
+        if (metal.imagePath && !metal.imageUrl) {
             const imageRef = storageRef(storage, metal.imagePath);
             getDownloadURL(imageRef)
                 .then((url) => {
                     const img = document.querySelector(`#price-${metal.id}`).closest('.metal-card').querySelector('.metal-image');
                     if (img) {
                         img.src = url;
-                        metal.imageUrl = url; // Cache URL
+                        // Update the metal object with URL
+                        metal.imageUrl = url;
                     }
                 })
                 .catch((error) => {
@@ -104,6 +127,9 @@ onValue(pricesRef, (snapshot) => {
         });
     }, { onlyOnce: true }); // Get metals once to avoid infinite loop
 });
+
+// Load site settings on page load
+loadSiteSettings();
 
 // Order form submission
 document.getElementById('orderForm').addEventListener('submit', async function (e) {
@@ -178,5 +204,3 @@ window.onclick = function (event) {
 
 window.openModal = openModal;
 window.closeModal = closeModal;
-
-console.log('Firebase initialized successfully version 4');

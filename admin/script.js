@@ -1,6 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import {
-    getDatabase, ref, onValue, set, update, push, remove
+import { 
+    getDatabase, 
+    ref, 
+    onValue, 
+    set, 
+    update,
+    remove 
 } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 import {
     getStorage,
@@ -41,6 +46,7 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
         loadOrders();
         loadPrices();
         loadMetals();
+        loadSettings();
     } else {
         document.getElementById('errorMessage').style.display = 'block';
     }
@@ -204,6 +210,112 @@ function loadMetals() {
     });
 }
 
+// Load Site Settings
+function loadSettings() {
+    const settingsRef = ref(database, 'settings');
+    onValue(settingsRef, (snapshot) => {
+        const settings = snapshot.val() || {};
+        const currentSettings = document.getElementById('currentSettings');
+        
+        // Update previews
+        if (settings.heroImageUrl) {
+            document.getElementById('heroPreview').src = settings.heroImageUrl;
+            document.getElementById('heroPreview').style.display = 'block';
+        }
+        
+        if (settings.faviconUrl) {
+            document.getElementById('faviconPreview').src = settings.faviconUrl;
+            document.getElementById('faviconPreview').style.display = 'block';
+        }
+        
+        // Show current settings info
+        currentSettings.innerHTML = `
+            <p><strong>Hero изображение:</strong><br>
+            ${settings.heroImageUrl ? '<a href="' + settings.heroImageUrl + '" target="_blank">' + settings.heroImageUrl.substring(0, 50) + '...</a>' : 'Не загружено'}</p>
+            <p><strong>Favicon:</strong><br>
+            ${settings.faviconUrl ? '<a href="' + settings.faviconUrl + '" target="_blank">' + settings.faviconUrl.substring(0, 50) + '...</a>' : 'Не загружено'}</p>
+            <p><strong>Последнее обновление:</strong><br>
+            ${settings.updatedAt ? new Date(settings.updatedAt).toLocaleString('ru-RU') : 'Нет данных'}</p>
+        `;
+    });
+}
+
+// Upload Hero Image
+window.uploadHeroImage = async function() {
+    const fileInput = document.getElementById('heroImage');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Выберите изображение');
+        return;
+    }
+    
+    showLoading(true);
+    
+    try {
+        // Upload to Storage
+        const timestamp = Date.now();
+        const imagePath = `settings/hero_${timestamp}_${file.name}`;
+        const imageStorageRef = storageRef(storage, imagePath);
+        await uploadBytes(imageStorageRef, file);
+        const imageUrl = await getDownloadURL(imageStorageRef);
+        
+        // Save to Database
+        const settingsRef = ref(database, 'settings');
+        await update(settingsRef, {
+            heroImagePath: imagePath,
+            heroImageUrl: imageUrl,
+            updatedAt: new Date().toISOString()
+        });
+        
+        showSuccess('Hero изображение обновлено');
+        fileInput.value = ''; // Clear input
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка при загрузке');
+    } finally {
+        showLoading(false);
+    }
+};
+
+// Upload Favicon
+window.uploadFavicon = async function() {
+    const fileInput = document.getElementById('faviconImage');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Выберите изображение');
+        return;
+    }
+    
+    showLoading(true);
+    
+    try {
+        // Upload to Storage
+        const timestamp = Date.now();
+        const imagePath = `settings/favicon_${timestamp}_${file.name}`;
+        const imageStorageRef = storageRef(storage, imagePath);
+        await uploadBytes(imageStorageRef, file);
+        const imageUrl = await getDownloadURL(imageStorageRef);
+        
+        // Save to Database
+        const settingsRef = ref(database, 'settings');
+        await update(settingsRef, {
+            faviconPath: imagePath,
+            faviconUrl: imageUrl,
+            updatedAt: new Date().toISOString()
+        });
+        
+        showSuccess('Favicon обновлен');
+        fileInput.value = ''; // Clear input
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка при загрузке');
+    } finally {
+        showLoading(false);
+    }
+};
+
 // Update Price
 window.updatePrice = async function (metalId) {
     const priceInput = document.getElementById(`price-${metalId}`);
@@ -217,12 +329,7 @@ window.updatePrice = async function (metalId) {
     try {
         const priceRef = ref(database, `prices/${metalId}`);
         await set(priceRef, newPrice);
-
-        const toast = document.getElementById('successToast');
-        toast.style.display = 'block';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
+        showSuccess('Цена обновлена');
     } catch (error) {
         console.error('Error:', error);
         alert('Ошибка при обновлении цены');
@@ -230,7 +337,7 @@ window.updatePrice = async function (metalId) {
 };
 
 // Add/Edit Metal Modal
-window.openAddMetalModal = function () {
+window.openAddMetalModal = function() {
     document.getElementById('modalTitle').textContent = 'Добавить металл';
     document.getElementById('metalId').value = '';
     document.getElementById('metalName').value = '';
@@ -242,7 +349,7 @@ window.openAddMetalModal = function () {
     document.getElementById('metalModal').style.display = 'block';
 };
 
-window.editMetal = async function (metalId) {
+window.editMetal = async function(metalId) {
     const metalsRef = ref(database, `metals/${metalId}`);
     onValue(metalsRef, (snapshot) => {
         const metal = snapshot.val();
@@ -252,7 +359,7 @@ window.editMetal = async function (metalId) {
         document.getElementById('metalCategory').value = metal.category;
         document.getElementById('metalPrice').value = metal.defaultPrice;
         document.getElementById('metalOrder').value = metal.order || 0;
-
+        
         const currentImage = document.getElementById('currentImage');
         if (metal.imageUrl) {
             currentImage.src = metal.imageUrl;
@@ -260,16 +367,16 @@ window.editMetal = async function (metalId) {
         } else {
             currentImage.style.display = 'none';
         }
-
+        
         document.getElementById('metalImage').required = false;
         document.getElementById('metalModal').style.display = 'block';
     }, { onlyOnce: true });
 };
 
 // Save Metal
-document.getElementById('metalForm').addEventListener('submit', async function (e) {
+document.getElementById('metalForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-
+    
     const submitBtn = document.getElementById('saveMetalBtn');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Сохранение...';
@@ -319,13 +426,7 @@ document.getElementById('metalForm').addEventListener('submit', async function (
         }
 
         closeMetalModal();
-
-        const toast = document.getElementById('successToast');
-        toast.style.display = 'block';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
-
+        showSuccess('Металл сохранен');
         loadMetals();
         loadPrices();
     } catch (error) {
@@ -338,7 +439,7 @@ document.getElementById('metalForm').addEventListener('submit', async function (
 });
 
 // Delete Metal
-window.deleteMetal = async function (metalId, imagePath) {
+window.deleteMetal = async function(metalId, imagePath) {
     if (!confirm('Вы уверены, что хотите удалить этот металл?')) {
         return;
     }
@@ -362,12 +463,7 @@ window.deleteMetal = async function (metalId, imagePath) {
         const priceRef = ref(database, `prices/${metalId}`);
         await remove(priceRef);
 
-        const toast = document.getElementById('successToast');
-        toast.style.display = 'block';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
-
+        showSuccess('Металл удален');
         loadMetals();
         loadPrices();
     } catch (error) {
@@ -375,6 +471,20 @@ window.deleteMetal = async function (metalId, imagePath) {
         alert('Ошибка при удалении');
     }
 };
+
+// Helper Functions
+function showLoading(show) {
+    document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none';
+}
+
+function showSuccess(message) {
+    const toast = document.getElementById('successToast');
+    toast.textContent = `✅ ${message}`;
+    toast.style.display = 'block';
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 3000);
+}
 
 // Close Metal Modal
 function closeMetalModal() {
@@ -411,7 +521,7 @@ function closeModal() {
 window.onclick = function (event) {
     const orderModal = document.getElementById('orderModal');
     const metalModal = document.getElementById('metalModal');
-
+    
     if (event.target == orderModal) {
         closeModal();
     }
@@ -424,5 +534,3 @@ window.showTab = showTab;
 window.logout = logout;
 window.closeModal = closeModal;
 window.closeMetalModal = closeMetalModal;
-
-console.log('Firebase initialized successfully version 4');

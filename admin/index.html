@@ -38,6 +38,7 @@
                 <button class="tab active" onclick="showTab('orders')">📋 Заявки</button>
                 <button class="tab" onclick="showTab('prices')">💰 Цены</button>
                 <button class="tab" onclick="showTab('metals')">⚙️ Металлы</button>
+                <button class="tab" onclick="showTab('settings')">⚙️ Настройки сайта</button>
             </div>
 
             <!-- Orders Tab -->
@@ -59,6 +60,48 @@
                 <h2>Управление металлами</h2>
                 <div id="metalsGrid" class="metals-grid">
                     <!-- Metals will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Site Settings Tab -->
+            <div id="settingsTab" class="tab-content">
+                <h2>Настройки сайта</h2>
+                <div class="settings-container">
+                    <!-- Hero Image Settings -->
+                    <div class="settings-card">
+                        <h3>🖼️ Изображение шапки (Hero)</h3>
+                        <div class="settings-preview">
+                            <img id="heroPreview" src="" alt="Hero preview" style="max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 10px; display: none;">
+                        </div>
+                        <div class="form-group">
+                            <label for="heroImage">Загрузить новое изображение шапки:</label>
+                            <input type="file" id="heroImage" accept="image/*">
+                            <small style="color: #666; display: block; margin-top: 5px;">Рекомендуемый размер: 1920x600px</small>
+                        </div>
+                        <button class="upload-btn" onclick="uploadHeroImage()">Загрузить</button>
+                    </div>
+
+                    <!-- Favicon Settings -->
+                    <div class="settings-card">
+                        <h3>🔖 Favicon</h3>
+                        <div class="settings-preview">
+                            <img id="faviconPreview" src="" alt="Favicon preview" style="width: 48px; height: 48px; border-radius: 4px; margin-bottom: 10px; display: none;">
+                        </div>
+                        <div class="form-group">
+                            <label for="faviconImage">Загрузить новый favicon:</label>
+                            <input type="file" id="faviconImage" accept="image/png, image/x-icon, image/jpeg">
+                            <small style="color: #666; display: block; margin-top: 5px;">Рекомендуемый формат: PNG, 48x48px</small>
+                        </div>
+                        <button class="upload-btn" onclick="uploadFavicon()">Загрузить</button>
+                    </div>
+
+                    <!-- Current Settings Info -->
+                    <div class="settings-card">
+                        <h3>📊 Текущие настройки</h3>
+                        <div id="currentSettings" class="current-settings">
+                            Загрузка...
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -137,15 +180,76 @@
         ✅ Операция успешно выполнена!
     </div>
 
-    <!-- Loading Spinner (optional) -->
+    <!-- Loading Spinner -->
     <div id="loadingSpinner" class="loading-spinner" style="display: none;">
         <div class="spinner"></div>
     </div>
 
-    <script type="module">import "./script.js?v=5";</script>
+    <script type="module">import "./script.js?v=7";</script>
 
     <style>
-        /* Additional styles for metal management */
+        /* Additional styles for settings tab */
+        .settings-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .settings-card h3 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+
+        .settings-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .upload-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .upload-btn:hover {
+            background: #0056b3;
+        }
+
+        .current-settings {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .current-settings p {
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
         .metals-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -329,7 +433,6 @@
             overflow-y: auto;
         }
 
-        /* Toast message enhancement */
         .success-toast {
             position: fixed;
             bottom: 20px;
@@ -355,7 +458,6 @@
             }
         }
 
-        /* Loading spinner */
         .loading-spinner {
             position: fixed;
             top: 0;
@@ -383,7 +485,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Tabs enhancement */
         .tabs {
             display: flex;
             gap: 5px;
@@ -391,6 +492,7 @@
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .tab {
@@ -415,7 +517,6 @@
             color: white;
         }
 
-        /* Admin header enhancement */
         .admin-header {
             display: flex;
             justify-content: space-between;
