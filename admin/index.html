@@ -37,6 +37,7 @@
             <div class="tabs">
                 <button class="tab active" onclick="showTab('orders')">📋 Заявки</button>
                 <button class="tab" onclick="showTab('prices')">💰 Цены</button>
+                <button class="tab" onclick="showTab('metals')">⚙️ Металлы</button>
             </div>
 
             <!-- Orders Tab -->
@@ -50,6 +51,14 @@
             <div id="pricesTab" class="tab-content">
                 <div id="pricesGrid" class="prices-grid">
                     <!-- Prices will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Metals Management Tab -->
+            <div id="metalsTab" class="tab-content">
+                <h2>Управление металлами</h2>
+                <div id="metalsGrid" class="metals-grid">
+                    <!-- Metals will be loaded here -->
                 </div>
             </div>
         </div>
@@ -68,11 +77,375 @@
         </div>
     </div>
 
-    <!-- Success Toast -->
-    <div id="successToast" class="success-toast">
-        ✅ Цена успешно обновлена!
+    <!-- Metal Modal (Add/Edit) -->
+    <div id="metalModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="modalTitle">Добавить металл</h3>
+                <span class="close" onclick="closeMetalModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="metalForm">
+                    <input type="hidden" id="metalId">
+                    
+                    <div class="form-group">
+                        <label for="metalName">Название металла:</label>
+                        <input type="text" id="metalName" placeholder="Например: 🔩 Железный лом (А3)" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metalCategory">Категория:</label>
+                        <select id="metalCategory" required>
+                            <option value="black">Черный металл</option>
+                            <option value="colored">Цветной металл</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metalPrice">Базовая цена (₽/кг):</label>
+                        <input type="number" id="metalPrice" min="0" step="100" placeholder="Например: 2500" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metalOrder">Порядок отображения:</label>
+                        <input type="number" id="metalOrder" value="0" min="0" placeholder="0 - первый">
+                        <small style="color: #666; display: block; margin-top: 5px;">Меньшее число = выше в списке</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Текущее изображение:</label>
+                        <img id="currentImage" src="" alt="Превью" style="max-width: 200px; max-height: 150px; margin-bottom: 10px; display: none; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metalImage">Загрузить новое изображение:</label>
+                        <input type="file" id="metalImage" accept="image/*">
+                        <small style="color: #666; display: block; margin-top: 5px;">Рекомендуемый размер: 300x300px</small>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="submit-btn" id="saveMetalBtn" style="flex: 2;">Сохранить</button>
+                        <button type="button" class="cancel-btn" onclick="closeMetalModal()" style="flex: 1;">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <script type="module">import "./script.js?v=3";</script>
+    <!-- Success Toast -->
+    <div id="successToast" class="success-toast">
+        ✅ Операция успешно выполнена!
+    </div>
+
+    <!-- Loading Spinner (optional) -->
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script type="module">import "./script.js?v=5";</script>
+
+    <style>
+        /* Additional styles for metal management */
+        .metals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        .metal-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .metal-card.add-metal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s;
+        }
+
+        .metal-card.add-metal:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .add-metal-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        .metal-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #f0f0f0;
+        }
+
+        .metal-info {
+            flex: 1;
+        }
+
+        .metal-info h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+
+        .metal-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .metal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .edit-btn, .delete-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .edit-btn:hover {
+            background: #e0a800;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .cancel-btn {
+            padding: 10px 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .cancel-btn:hover {
+            background: #5a6268;
+        }
+
+        .submit-btn {
+            padding: 10px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: #218838;
+        }
+
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        #currentImage {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            padding: 5px;
+            background: #f8f9fa;
+        }
+
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Toast message enhancement */
+        .success-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1001;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tabs enhancement */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+
+        /* Admin header enhancement */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #2c3e50;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
 </body>
 </html>

@@ -1,6 +1,14 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+import {
+    getDatabase, ref, onValue, set, update, push, remove
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+import {
+    getStorage,
+    ref as storageRef,
+    uploadBytes,
+    getDownloadURL,
+    deleteObject
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCdrz8JMttKpswmvjmlIDivROJHS_uIMwU",
@@ -12,10 +20,10 @@ const firebaseConfig = {
     appId: "1:974569748549:web:ffebaa3b638e4572804b2c",
     measurementId: "G-7Y5PQQ5Y4Q"
 };
-    
-// console.log("Main site Firebase connected:", app);
+
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const storage = getStorage(app);
 
 // Admin credentials
 const ADMIN_USERNAME = "admin";
@@ -32,6 +40,7 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
         document.getElementById('adminDashboard').style.display = 'block';
         loadOrders();
         loadPrices();
+        loadMetals();
     } else {
         document.getElementById('errorMessage').style.display = 'block';
     }
@@ -62,23 +71,23 @@ function loadOrders() {
             orderCard.className = 'order-card';
             orderCard.onclick = () => showOrderDetail(order);
             orderCard.innerHTML = `
-                        <div class="order-header">
-                            <span class="order-id">ID: ${order.id.substring(0, 8)}</span>
-                            <span class="order-date">${order.date}</span>
-                        </div>
-                        <div class="order-info">
-                            <strong>Имя:</strong> <span>${order.name}</span>
-                        </div>
-                        <div class="order-info">
-                            <strong>Телефон:</strong> <span>${order.phone}</span>
-                        </div>
-                        <div class="order-info">
-                            <strong>Количество:</strong> <span>${order.quantity} кг</span>
-                        </div>
-                        <div class="order-info">
-                            <strong>Адрес:</strong> <span>${order.address}</span>
-                        </div>
-                    `;
+                <div class="order-header">
+                    <span class="order-id">ID: ${order.id.substring(0, 8)}</span>
+                    <span class="order-date">${order.date}</span>
+                </div>
+                <div class="order-info">
+                    <strong>Имя:</strong> <span>${order.name}</span>
+                </div>
+                <div class="order-info">
+                    <strong>Телефон:</strong> <span>${order.phone}</span>
+                </div>
+                <div class="order-info">
+                    <strong>Количество:</strong> <span>${order.quantity} кг</span>
+                </div>
+                <div class="order-info">
+                    <strong>Адрес:</strong> <span>${order.address}</span>
+                </div>
+            `;
             ordersGrid.appendChild(orderCard);
         });
     });
@@ -88,35 +97,35 @@ function loadOrders() {
 window.showOrderDetail = function (order) {
     const modalBody = document.getElementById('modalBody');
     modalBody.innerHTML = `
-                <div class="detail-row">
-                    <div class="detail-label">ID Заявки</div>
-                    <div class="detail-value">${order.id}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Дата и время</div>
-                    <div class="detail-value">${order.date}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Имя клиента</div>
-                    <div class="detail-value">${order.name}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Номер телефона</div>
-                    <div class="detail-value"><a href="tel:${order.phone}">${order.phone}</a></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Количество</div>
-                    <div class="detail-value">${order.quantity} кг</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Адрес</div>
-                    <div class="detail-value">${order.address}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Комментарий</div>
-                    <div class="detail-value">${order.comment || 'Нет комментария'}</div>
-                </div>
-            `;
+        <div class="detail-row">
+            <div class="detail-label">ID Заявки</div>
+            <div class="detail-value">${order.id}</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Дата и время</div>
+            <div class="detail-value">${order.date}</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Имя клиента</div>
+            <div class="detail-value">${order.name}</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Номер телефона</div>
+            <div class="detail-value"><a href="tel:${order.phone}">${order.phone}</a></div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Количество</div>
+            <div class="detail-value">${order.quantity} кг</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Адрес</div>
+            <div class="detail-value">${order.address}</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Комментарий</div>
+            <div class="detail-value">${order.comment || 'Нет комментария'}</div>
+        </div>
+    `;
     document.getElementById('orderModal').style.display = 'block';
 };
 
@@ -127,35 +136,70 @@ function loadPrices() {
         const pricesGrid = document.getElementById('pricesGrid');
         pricesGrid.innerHTML = '';
 
-        const metals = [
-            { id: 'iron', name: '🔩 Железный лом (А3)', category: 'black', default: 2500 },
-            { id: 'cast_iron', name: '⚙️ Чугун', category: 'black', default: 2200 },
-            { id: 'steel', name: '🔧 Стальной лом', category: 'black', default: 2800 },
-            { id: 'rebar', name: '🏗️ Арматура', category: 'black', default: 2400 },
-            { id: 'copper', name: '🟡 Медь', category: 'colored', default: 95000 },
-            { id: 'brass', name: '🟠 Латунь', category: 'colored', default: 55000 },
-            { id: 'aluminum', name: '⚪ Алюминий', category: 'colored', default: 28000 },
-            { id: 'lead', name: '🔵 Свинец', category: 'colored', default: 18000 },
-            { id: 'stainless', name: '⚫ Нержавейка', category: 'colored', default: 45000 }
-        ];
+        // Load metals first
+        const metalsRef = ref(database, 'metals');
+        onValue(metalsRef, (metalsSnapshot) => {
+            const metals = metalsSnapshot.val() || {};
+            const prices = snapshot.val() || {};
 
-        const prices = snapshot.val() || {};
+            Object.entries(metals).forEach(([id, metal]) => {
+                const price = prices[id] || metal.defaultPrice || 0;
+                const priceCard = document.createElement('div');
+                priceCard.className = 'price-card';
+                priceCard.innerHTML = `
+                    <div class="price-header">${metal.name}</div>
+                    <div class="price-input-group">
+                        <input type="number" class="price-input" id="price-${id}" value="${price}" min="0">
+                        <button class="update-btn" onclick="updatePrice('${id}')">Обновить</button>
+                    </div>
+                    <span class="category-badge badge-${metal.category}">
+                        ${metal.category === 'black' ? 'Черный металл' : 'Цветной металл'}
+                    </span>
+                `;
+                pricesGrid.appendChild(priceCard);
+            });
+        }, { onlyOnce: true });
+    });
+}
 
-        metals.forEach(metal => {
-            const price = prices[metal.id] || metal.default;
-            const priceCard = document.createElement('div');
-            priceCard.className = 'price-card';
-            priceCard.innerHTML = `
-                        <div class="price-header">${metal.name}</div>
-                        <div class="price-input-group">
-                            <input type="number" class="price-input" id="price-${metal.id}" value="${price}" min="0">
-                            <button class="update-btn" onclick="updatePrice('${metal.id}')">Обновить</button>
-                        </div>
-                        <span class="category-badge badge-${metal.category}">
-                            ${metal.category === 'black' ? 'Черный металл' : 'Цветной металл'}
-                        </span>
-                    `;
-            pricesGrid.appendChild(priceCard);
+// Load Metals for management
+function loadMetals() {
+    const metalsRef = ref(database, 'metals');
+    onValue(metalsRef, (snapshot) => {
+        const metalsGrid = document.getElementById('metalsGrid');
+        metalsGrid.innerHTML = '';
+
+        const metals = snapshot.val() || {};
+
+        // Add new metal button
+        const addCard = document.createElement('div');
+        addCard.className = 'metal-card add-metal';
+        addCard.innerHTML = `
+            <div class="add-metal-content" onclick="openAddMetalModal()">
+                <span style="font-size: 48px;">+</span>
+                <span>Добавить металл</span>
+            </div>
+        `;
+        metalsGrid.appendChild(addCard);
+
+        // Display existing metals
+        Object.entries(metals).forEach(([id, metal]) => {
+            const metalCard = document.createElement('div');
+            metalCard.className = 'metal-card';
+            metalCard.innerHTML = `
+                <img src="${metal.imageUrl || 'images/placeholder.jpg'}" alt="${metal.name}" class="metal-image" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">
+                <div class="metal-info">
+                    <h3>${metal.name}</h3>
+                    <p>Категория: ${metal.category === 'black' ? 'Черный' : 'Цветной'}</p>
+                    <p>Базовая цена: ${metal.defaultPrice} ₽/кг</p>
+                    <p>Порядок: ${metal.order || 0}</p>
+                    <div class="metal-actions">
+                        <button class="edit-btn" onclick="editMetal('${id}')">✏️ Редактировать</button>
+                        <button class="delete-btn" onclick="deleteMetal('${id}', '${metal.imagePath || ''}')">🗑️ Удалить</button>
+                    </div>
+                </div>
+            `;
+            metalsGrid.appendChild(metalCard);
         });
     });
 }
@@ -174,7 +218,6 @@ window.updatePrice = async function (metalId) {
         const priceRef = ref(database, `prices/${metalId}`);
         await set(priceRef, newPrice);
 
-        // Show success toast
         const toast = document.getElementById('successToast');
         toast.style.display = 'block';
         setTimeout(() => {
@@ -186,10 +229,159 @@ window.updatePrice = async function (metalId) {
     }
 };
 
-// Make functions global
-window.loadOrders = loadOrders;
-window.loadPrices = loadPrices;
+// Add/Edit Metal Modal
+window.openAddMetalModal = function () {
+    document.getElementById('modalTitle').textContent = 'Добавить металл';
+    document.getElementById('metalId').value = '';
+    document.getElementById('metalName').value = '';
+    document.getElementById('metalCategory').value = 'black';
+    document.getElementById('metalPrice').value = '';
+    document.getElementById('metalOrder').value = '0';
+    document.getElementById('currentImage').style.display = 'none';
+    document.getElementById('metalImage').required = true;
+    document.getElementById('metalModal').style.display = 'block';
+};
 
+window.editMetal = async function (metalId) {
+    const metalsRef = ref(database, `metals/${metalId}`);
+    onValue(metalsRef, (snapshot) => {
+        const metal = snapshot.val();
+        document.getElementById('modalTitle').textContent = 'Редактировать металл';
+        document.getElementById('metalId').value = metalId;
+        document.getElementById('metalName').value = metal.name;
+        document.getElementById('metalCategory').value = metal.category;
+        document.getElementById('metalPrice').value = metal.defaultPrice;
+        document.getElementById('metalOrder').value = metal.order || 0;
+
+        const currentImage = document.getElementById('currentImage');
+        if (metal.imageUrl) {
+            currentImage.src = metal.imageUrl;
+            currentImage.style.display = 'block';
+        } else {
+            currentImage.style.display = 'none';
+        }
+
+        document.getElementById('metalImage').required = false;
+        document.getElementById('metalModal').style.display = 'block';
+    }, { onlyOnce: true });
+};
+
+// Save Metal
+document.getElementById('metalForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('saveMetalBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Сохранение...';
+
+    const metalId = document.getElementById('metalId').value;
+    const name = document.getElementById('metalName').value;
+    const category = document.getElementById('metalCategory').value;
+    const defaultPrice = parseInt(document.getElementById('metalPrice').value);
+    const order = parseInt(document.getElementById('metalOrder').value) || 0;
+    const imageFile = document.getElementById('metalImage').files[0];
+
+    try {
+        let imagePath = '';
+        let imageUrl = '';
+
+        // Upload image if selected
+        if (imageFile) {
+            const timestamp = Date.now();
+            imagePath = `metals/${timestamp}_${imageFile.name}`;
+            const imageStorageRef = storageRef(storage, imagePath);
+            await uploadBytes(imageStorageRef, imageFile);
+            imageUrl = await getDownloadURL(imageStorageRef);
+        }
+
+        const metalData = {
+            name,
+            category,
+            defaultPrice,
+            order,
+            updatedAt: new Date().toISOString()
+        };
+
+        if (imagePath) {
+            metalData.imagePath = imagePath;
+            metalData.imageUrl = imageUrl;
+        }
+
+        if (metalId) {
+            // Update existing metal
+            const metalRef = ref(database, `metals/${metalId}`);
+            await update(metalRef, metalData);
+        } else {
+            // Add new metal
+            const newId = `metal_${Date.now()}`;
+            const metalRef = ref(database, `metals/${newId}`);
+            await set(metalRef, metalData);
+        }
+
+        closeMetalModal();
+
+        const toast = document.getElementById('successToast');
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+
+        loadMetals();
+        loadPrices();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка при сохранении');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Сохранить';
+    }
+});
+
+// Delete Metal
+window.deleteMetal = async function (metalId, imagePath) {
+    if (!confirm('Вы уверены, что хотите удалить этот металл?')) {
+        return;
+    }
+
+    try {
+        // Delete image from Storage if exists
+        if (imagePath) {
+            try {
+                const imageStorageRef = storageRef(storage, imagePath);
+                await deleteObject(imageStorageRef);
+            } catch (error) {
+                console.error('Error deleting image:', error);
+            }
+        }
+
+        // Delete metal from Database
+        const metalRef = ref(database, `metals/${metalId}`);
+        await remove(metalRef);
+
+        // Delete price if exists
+        const priceRef = ref(database, `prices/${metalId}`);
+        await remove(priceRef);
+
+        const toast = document.getElementById('successToast');
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+
+        loadMetals();
+        loadPrices();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка при удалении');
+    }
+};
+
+// Close Metal Modal
+function closeMetalModal() {
+    document.getElementById('metalModal').style.display = 'none';
+    document.getElementById('metalForm').reset();
+    document.getElementById('currentImage').style.display = 'none';
+}
 
 // Tab switching
 function showTab(tabName) {
@@ -215,14 +407,22 @@ function closeModal() {
     document.getElementById('orderModal').style.display = 'none';
 }
 
-// Close modal on outside click
+// Close modals on outside click
 window.onclick = function (event) {
-    const modal = document.getElementById('orderModal');
-    if (event.target == modal) {
+    const orderModal = document.getElementById('orderModal');
+    const metalModal = document.getElementById('metalModal');
+
+    if (event.target == orderModal) {
         closeModal();
+    }
+    if (event.target == metalModal) {
+        closeMetalModal();
     }
 }
 
 window.showTab = showTab;
 window.logout = logout;
 window.closeModal = closeModal;
+window.closeMetalModal = closeMetalModal;
+
+console.log('Firebase initialized successfully version 4');

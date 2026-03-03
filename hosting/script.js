@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCdrz8JMttKpswmvjmlIDivROJHS_uIMwU",
@@ -14,74 +15,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-
-
-// Metal data with default prices
-const metals = [
-    {
-        id: 'iron',
-        name: '🔩 Железный лом (А3)',
-        image: 'images/photo1.jpg',
-        category: 'black',
-        defaultPrice: 2500
-    },
-    {
-        id: 'cast_iron',
-        name: '⚙️ Чугун',
-        image: 'images/photo2.jpg',
-        category: 'black',
-        defaultPrice: 2200
-    },
-    {
-        id: 'steel',
-        name: '🔧 Стальной лом',
-        image: 'images/photo3.jpg',
-        category: 'black',
-        defaultPrice: 2800
-    },
-    {
-        id: 'rebar',
-        name: '🏗️ Арматура',
-        image: 'images/photo4.jpg',
-        category: 'black',
-        defaultPrice: 2400
-    },
-    {
-        id: 'copper',
-        name: '🟡 Медь',
-        image: 'images/photo5.jpg',
-        category: 'colored',
-        defaultPrice: 95000
-    },
-    {
-        id: 'brass',
-        name: '🟠 Латунь',
-        image: 'images/photo6.jpg',
-        category: 'colored',
-        defaultPrice: 55000
-    },
-    {
-        id: 'aluminum',
-        name: '⚪ Алюминий',
-        image: 'images/photo7.jpg',
-        category: 'colored',
-        defaultPrice: 28000
-    },
-    {
-        id: 'lead',
-        name: '🔵 Свинец',
-        image: 'images/photo8.jpg',
-        category: 'colored',
-        defaultPrice: 18000
-    },
-    {
-        id: 'stainless',
-        name: '⚫ Нержавейка',
-        image: 'images/photo9.jpg',
-        category: 'colored',
-        defaultPrice: 45000
-    }
-];
+const storage = getStorage(app);
 
 // Format price in rubles
 function formatPrice(price) {
@@ -91,44 +25,84 @@ function formatPrice(price) {
 // Create metal card
 function createMetalCard(metal, price) {
     return `
-                <div class="metal-card">
-                    <img src="${metal.image}" alt="${metal.name}" class="metal-image">
-                    <div class="metal-info">
-                        <div class="metal-name">${metal.name}</div>
-                        <div class="metal-price" id="price-${metal.id}">
-                            ${price ? formatPrice(price) : '<span class="price-loading">Загрузка...</span>'}
-                            <span class="metal-unit">₽ / кг</span>
-                        </div>
-                        <span class="metal-category category-${metal.category}">
-                            ${metal.category === 'black' ? 'Черный металл' : 'Цветной металл'}
-                        </span>
-                    </div>
+        <div class="metal-card">
+            <img src="${metal.imageUrl || 'images/placeholder.jpg'}" alt="${metal.name}" class="metal-image" loading="lazy">
+            <div class="metal-info">
+                <div class="metal-name">${metal.name}</div>
+                <div class="metal-price" id="price-${metal.id}">
+                    ${price ? formatPrice(price) : '<span class="price-loading">Загрузка...</span>'}
+                    <span class="metal-unit">₽ / кг</span>
                 </div>
-            `;
+                <span class="metal-category category-${metal.category}">
+                    ${metal.category === 'black' ? 'Черный металл' : 'Цветной металл'}
+                </span>
+            </div>
+        </div>
+    `;
 }
 
-// Initialize metal cards
+// Load metals from Firebase
 const metalGrid = document.getElementById('metalGrid');
-metals.forEach(metal => {
-    metalGrid.innerHTML += createMetalCard(metal, null);
+
+// Listen to metals changes
+const metalsRef = ref(database, 'metals');
+onValue(metalsRef, (snapshot) => {
+    const metalsData = snapshot.val() || {};
+    metalGrid.innerHTML = ''; // Clear grid
+    
+    // Convert object to array and sort by order
+    const metals = Object.entries(metalsData).map(([id, data]) => ({
+        id,
+        ...data
+    })).sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    metals.forEach(metal => {
+        metalGrid.innerHTML += createMetalCard(metal, null);
+        
+        // Load image from Storage if imagePath exists
+        if (metal.imagePath) {
+            const imageRef = storageRef(storage, metal.imagePath);
+            getDownloadURL(imageRef)
+                .then((url) => {
+                    const img = document.querySelector(`#price-${metal.id}`).closest('.metal-card').querySelector('.metal-image');
+                    if (img) {
+                        img.src = url;
+                        metal.imageUrl = url; // Cache URL
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error loading image:', error);
+                });
+        }
+    });
 });
 
-// Listen to price changes in real-time
+// Listen to price changes
 const pricesRef = ref(database, 'prices');
 onValue(pricesRef, (snapshot) => {
     const prices = snapshot.val() || {};
 
-    metals.forEach(metal => {
-        const price = prices[metal.id] || metal.defaultPrice;
-        const priceElement = document.getElementById(`price-${metal.id}`);
+    // Get metals again to update prices
+    const metalsRef = ref(database, 'metals');
+    onValue(metalsRef, (metalsSnapshot) => {
+        const metalsData = metalsSnapshot.val() || {};
+        const metals = Object.entries(metalsData).map(([id, data]) => ({
+            id,
+            ...data
+        }));
 
-        if (priceElement) {
-            priceElement.innerHTML = `
-                        ${formatPrice(price)}
-                        <span class="metal-unit">₽ / кг</span>
-                    `;
-        }
-    });
+        metals.forEach(metal => {
+            const price = prices[metal.id] || metal.defaultPrice || 0;
+            const priceElement = document.getElementById(`price-${metal.id}`);
+
+            if (priceElement) {
+                priceElement.innerHTML = `
+                    ${formatPrice(price)}
+                    <span class="metal-unit">₽ / кг</span>
+                `;
+            }
+        });
+    }, { onlyOnce: true }); // Get metals once to avoid infinite loop
 });
 
 // Order form submission
@@ -204,3 +178,5 @@ window.onclick = function (event) {
 
 window.openModal = openModal;
 window.closeModal = closeModal;
+
+console.log('Firebase initialized successfully version 4');
