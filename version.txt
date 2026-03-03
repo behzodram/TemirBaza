@@ -1,3 +1,4 @@
+v 1.0.7 => main: sytle.css changed style.css
 v 1.0.6 => main: reAD ME  edit
 v 1.0.5 => main: admin va mani uchun firebase config js faylida manula ammo bir xil
 v 1.0.4 => main: readme new
