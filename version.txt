@@ -1,3 +1,4 @@
+v 1.1.7 => main: TEST fayl o'chdi
 v 1.1.6 => main: TEST fayl yozildi
 v 1.1.5 => main: TEST fayl yozildi
 v 1.1.4 => main: TEST fayl yozildi
